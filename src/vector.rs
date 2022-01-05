@@ -1,5 +1,3 @@
-use crate::point::Point3;
-
 #[derive(Debug, Clone, Copy)]
 pub struct Vector3 {
     pub x: f32,
@@ -36,11 +34,24 @@ impl Vector3 {
         let length = self.length();
         Vector3::new(self.x / length, self.y / length, self.z / length)
     }
+}
 
-    pub fn to_point(&self) -> Point3 {
-        Point3::new(self.x as f32, self.y as f32, self.z as f32)
+impl std::ops::Add<Vector3> for Vector3 {
+    type Output = Vector3;
+
+    fn add(self, other: Vector3) -> Vector3 {
+        Vector3::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
+
+impl std::ops::Sub<Vector3> for Vector3 {
+    type Output = Vector3;
+
+    fn sub(self, other: Vector3) -> Vector3 {
+        Vector3::new(self.x - other.x, self.y - other.y, self.z - other.z)
+    }
+}
+
 impl std::ops::Mul<f32> for Vector3 {
     type Output = Vector3;
 

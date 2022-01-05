@@ -1,12 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-mod point;
 mod utils;
 mod vector;
 
 use image::{DynamicImage, GenericImage, ImageFormat};
-use point::Point3;
 use utils::Color;
 use vector::Vector3;
 
@@ -17,21 +15,13 @@ fn main() {
         fov: 90.0,
         light: Light {
             direction: Vector3::new(0.0, -1.0, -1.0),
-            color: Color {
-                red: 51,
-                green: 255,
-                blue: 51,
-            },
+            color: Color::new(51, 255, 51),
             intensity: 20.0,
         },
         spheres: vec![Sphere {
-            center: Point3::new(0.0, 0.0, -5.0),
+            center: Vector3::new(0.0, 0.0, -5.0),
             radius: 1.0,
-            color: Color {
-                red: 255,
-                green: 255,
-                blue: 255,
-            },
+            color: Color::new(255, 255, 255),
             albedo: 0.18,
         }],
     };
@@ -52,7 +42,7 @@ pub struct Light {
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
-    pub center: Point3,
+    pub center: Vector3,
     pub radius: f32,
     pub color: Color,
     pub albedo: f32,
@@ -61,7 +51,7 @@ pub struct Sphere {
 impl Sphere {
     fn intersect_distance(&self, ray: &Ray) -> Option<f32> {
         // Trigonometry yay!
-        let line = (self.center - ray.origin).to_vector();
+        let line = self.center - ray.origin;
         let adj = line.dot(&ray.direction);
         let distance2 = line.dot(&line) - adj.powi(2);
         let radius2 = self.radius.powi(2);
@@ -88,13 +78,13 @@ impl Sphere {
         Some(distance)
     }
 
-    pub fn surface_normal(&self, hit_point: Point3) -> Vector3 {
-        (hit_point - self.center).to_vector().normalize()
+    pub fn surface_normal(&self, hit_point: Vector3) -> Vector3 {
+        (hit_point - self.center).normalize()
     }
 
     pub fn calc_color(&self, ray: &Ray, light: &Light) -> Color {
         if let Some(distance) = self.intersect_distance(ray) {
-            let hit_point = ray.origin + (ray.direction * distance).to_point();
+            let hit_point = ray.origin + (ray.direction * distance);
             let surface_normal = self.surface_normal(hit_point);
             let light_direction = light.direction.normalize() * -1.0;
             // Amount of light that lands on the point
@@ -109,24 +99,16 @@ impl Sphere {
                 (self.color.blue as f32 / 255.0) * (light.color.blue as f32 / 255.0),
             );
             let res_color = res_color * light_intensity * light_reflected * 255.0;
-            Color {
-                red: res_color.x as u8,
-                green: res_color.y as u8,
-                blue: res_color.z as u8,
-            }
+            Color::new(res_color.x as u8, res_color.y as u8, res_color.z as u8)
         } else {
-            Color {
-                red: 100,
-                green: 100,
-                blue: 100,
-            }
+            Color::new(100, 100, 100)
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Ray {
-    pub origin: Point3,
+    pub origin: Vector3,
     pub direction: Vector3,
 }
 
@@ -177,7 +159,7 @@ impl Scene {
         sensor_y *= fov_adj;
 
         Ray {
-            origin: Point3::zero(),
+            origin: Vector3::zero(),
             direction: Vector3 {
                 x: sensor_x,
                 y: sensor_y,
@@ -198,21 +180,13 @@ fn test_can_render_scene() {
         fov: 90.0,
         light: Light {
             direction: Vector3::new(0.0, 0.0, -1.0),
-            color: Color {
-                red: 255,
-                green: 255,
-                blue: 255,
-            },
+            color: Color::new(255, 255, 255),
             intensity: 1.0,
         },
         spheres: vec![Sphere {
-            center: Point3::zero(),
+            center: Vector3::zero(),
             radius: 1.0,
-            color: Color {
-                red: 200,
-                green: 20,
-                blue: 50,
-            },
+            color: Color::new(200, 20, 50),
             albedo: 1.0,
         }],
     };

@@ -12,6 +12,10 @@ pub struct Color {
 }
 
 impl Color {
+    pub fn new(red: u8, green: u8, blue: u8) -> Color {
+        Color { red, green, blue }
+    }
+
     pub fn to_rgba(&self) -> Rgba<u8> {
         Rgba::from_channels(self.red, self.green, self.blue, 255)
     }
