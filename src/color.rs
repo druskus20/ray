@@ -2,8 +2,6 @@ use std::ops::Mul;
 
 use image::{Pixel, Rgba};
 
-use crate::vector::Vector3;
-
 #[derive(Debug, Clone)]
 pub struct Color {
     pub red: u8,
@@ -25,22 +23,6 @@ impl Color {
             red: self.red.min(255),
             green: self.green.min(255),
             blue: self.blue.min(255),
-        }
-    }
-
-    fn to_vector(&self) -> Vector3 {
-        Vector3 {
-            x: self.red as f32 / 255.0,
-            y: self.green as f32 / 255.0,
-            z: self.blue as f32 / 255.0,
-        }
-    }
-
-    pub fn to_perc(&self) -> Vector3 {
-        Vector3 {
-            x: self.red as f32 / 255.0,
-            y: self.green as f32 / 255.0,
-            z: self.blue as f32 / 255.0,
         }
     }
 }

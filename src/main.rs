@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-mod utils;
+mod color;
 mod vector;
 
+use color::Color;
 use image::{DynamicImage, GenericImage, ImageFormat};
-use utils::Color;
 use vector::Vector3;
 
 fn main() {
