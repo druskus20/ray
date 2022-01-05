@@ -1,6 +1,7 @@
 # Ray
 Ray is a simple raytracer demo written in Rust
-![image](https://user-images.githubusercontent.com/43417195/148232600-df1c2449-bb47-41a8-bc29-c8533315f367.png)
+
+![image](https://user-images.githubusercontent.com/43417195/148246255-cbb52d36-c032-4148-9900-99ecf77680b0.png)
 
 
 ## TODO
