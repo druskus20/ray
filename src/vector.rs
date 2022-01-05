@@ -59,3 +59,11 @@ impl std::ops::Mul<f32> for Vector3 {
         Vector3::new(self.x * rhs, self.y * rhs, self.z * rhs)
     }
 }
+
+impl std::ops::Neg for Vector3 {
+    type Output = Vector3;
+
+    fn neg(self) -> Self::Output {
+        Vector3::new(-self.x, -self.y, -self.z)
+    }
+}

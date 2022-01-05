@@ -2,7 +2,7 @@ use std::ops::Mul;
 
 use image::{Pixel, Rgba};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Color {
     pub red: u8,
     pub green: u8,
