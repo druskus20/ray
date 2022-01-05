@@ -39,10 +39,6 @@ impl Scene {
     }
 
     pub fn spawn_prime_ray(&self, x: f32, y: f32) -> Ray {
-        // We are assuming that our image is wider than it is tall.
-        //  otherwise, the aspect ratio adjustment would be wrong.
-        assert!(self.width > self.height);
-
         // + 0.5 to center the ray in the pixel
         let mut sensor_x = (x + 0.5) / self.width as f32;
         let mut sensor_y = (y + 0.5) / self.height as f32;
@@ -53,8 +49,13 @@ impl Scene {
         sensor_y = 1.0 - (2.0 * sensor_y);
 
         // Adjust for the aspect ratio
-        let aspect_ratio = self.width as f32 / self.height as f32;
-        sensor_x *= aspect_ratio;
+        if self.width > self.height {
+            let aspect_ratio = self.width as f32 / self.height as f32;
+            sensor_x *= aspect_ratio;
+        } else {
+            let aspect_ratio = self.height as f32 / self.width as f32;
+            sensor_y *= aspect_ratio;
+        }
 
         // Adjust for the fov
         let fov_adj = (self.fov.to_radians() / 2.0).tan();
