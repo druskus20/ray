@@ -94,7 +94,6 @@ impl Sphere {
 
     pub fn calc_color(&self, ray: &Ray, light: &Light) -> Color {
         if let Some(distance) = self.intersect_distance(ray) {
-            let distance = distance;
             let hit_point = ray.origin + (ray.direction * distance).to_point();
             let surface_normal = self.surface_normal(hit_point);
             let light_direction = light.direction.normalize() * -1.0;
