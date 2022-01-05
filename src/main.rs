@@ -1,21 +1,38 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use image::{DynamicImage, GenericImage, ImageFormat, Pixel, Rgba};
+mod point;
+mod utils;
+mod vector;
+
+use image::{DynamicImage, GenericImage, ImageFormat};
+use point::Point3;
+use utils::Color;
+use vector::Vector3;
 
 fn main() {
     let scene = Scene {
         width: 800,
         height: 600,
         fov: 90.0,
+        light: Light {
+            direction: Vector3::new(0.0, -1.0, -1.0),
+            color: Color {
+                red: 51,
+                green: 255,
+                blue: 51,
+            },
+            intensity: 20.0,
+        },
         spheres: vec![Sphere {
             center: Point3::new(0.0, 0.0, -5.0),
             radius: 1.0,
             color: Color {
-                red: 200,
-                green: 20,
-                blue: 50,
+                red: 255,
+                green: 255,
+                blue: 255,
             },
+            albedo: 0.18,
         }],
     };
 
@@ -26,153 +43,115 @@ fn main() {
         .unwrap();
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Point3 {
-    x: f32,
-    y: f32,
-    z: f32,
-}
-
-impl std::ops::Add for Point3 {
-    type Output = Point3;
-
-    fn add(self, other: Point3) -> Point3 {
-        Point3 {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
-    }
-}
-
-impl std::ops::Sub for Point3 {
-    type Output = Point3;
-
-    fn sub(self, other: Point3) -> Point3 {
-        Point3 {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
-    }
-}
-
-impl Point3 {
-    pub fn new(x: f32, y: f32, z: f32) -> Point3 {
-        Point3 { x, y, z }
-    }
-
-    pub fn zero() -> Point3 {
-        Point3::new(0.0, 0.0, 0.0)
-    }
-
-    pub fn dot(&self, other: &Point3) -> f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
-    }
-
-    pub fn to_vector(&self) -> Vector3 {
-        Vector3::new(self.x, self.y, self.z)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct Vector3 {
-    x: f32,
-    y: f32,
-    z: f32,
-}
-
-impl Vector3 {
-    pub fn new(x: f32, y: f32, z: f32) -> Vector3 {
-        Vector3 { x, y, z }
-    }
-
-    pub fn zero() -> Vector3 {
-        Vector3::new(0.0, 0.0, 0.0)
-    }
-
-    pub fn dot(&self, other: &Vector3) -> f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
-    }
-
-    pub fn length(&self) -> f32 {
-        self.dot(&self).sqrt()
-    }
-
-    pub fn normalize(&self) -> Vector3 {
-        let length = self.length();
-        Vector3::new(self.x / length, self.y / length, self.z / length)
-    }
-
-    fn to_point(&self) -> Point3 {
-        Point3::new(self.x as f32, self.y as f32, self.z as f32)
-    }
-}
-
 #[derive(Debug, Clone)]
-pub struct Color {
-    red: u8,
-    green: u8,
-    blue: u8,
-}
-
-impl Color {
-    pub fn to_rgba(&self) -> Rgba<u8> {
-        Rgba::from_channels(self.red, self.green, self.blue, 255)
-    }
+pub struct Light {
+    pub direction: Vector3,
+    pub color: Color,
+    pub intensity: f32,
 }
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
-    center: Point3,
-    radius: f32,
-    color: Color,
+    pub center: Point3,
+    pub radius: f32,
+    pub color: Color,
+    pub albedo: f32,
 }
 
 impl Sphere {
-    fn intersect(&self, ray: &Ray) -> bool {
+    fn intersect_distance(&self, ray: &Ray) -> Option<f32> {
         let line = (self.center - ray.origin).to_vector();
         let adj = line.dot(&ray.direction);
-        let d2 = line.dot(&line) - adj.powi(2);
-        d2 < self.radius.powi(2)
+        let distance2 = line.dot(&line) - adj.powi(2);
+
+        let radius2 = self.radius.powi(2);
+        if distance2 > radius2 {
+            return None;
+        }
+
+        let thickness = (radius2 - distance2).sqrt();
+        let intersection_in = adj - thickness;
+        let intersection_out = adj + thickness;
+
+        if intersection_in < 0.0 && intersection_out < 0.0 {
+            return None;
+        }
+
+        let distance = if intersection_in < intersection_out {
+            intersection_in
+        } else {
+            intersection_out
+        };
+
+        Some(distance)
+    }
+
+    pub fn surface_normal(&self, hit_point: Point3) -> Vector3 {
+        (hit_point - self.center).to_vector().normalize()
+    }
+
+    pub fn calc_color(&self, ray: &Ray, light: &Light) -> Color {
+        if let Some(distance) = self.intersect_distance(ray) {
+            let distance = distance;
+            let hit_point = ray.origin + (ray.direction * distance).to_point();
+            let surface_normal = self.surface_normal(hit_point);
+            let light_direction = light.direction.normalize() * -1.0;
+            // Amount of light that lands on the point
+            let light_intensity = surface_normal.dot(&light_direction).max(0.0) * light.intensity;
+            // Amount of light reflected
+            let light_reflected = self.albedo / std::f32::consts::PI;
+
+            let res_color = Vector3::new(
+                (self.color.red as f32 / 255.0) * (light.color.red as f32 / 255.0),
+                (self.color.green as f32 / 255.0) * (light.color.green as f32 / 255.0),
+                (self.color.blue as f32 / 255.0) * (light.color.blue as f32 / 255.0),
+            );
+
+            let res_color = res_color * light_intensity * light_reflected * 255.0;
+            Color {
+                red: res_color.x as u8,
+                green: res_color.y as u8,
+                blue: res_color.z as u8,
+            }
+        } else {
+            Color {
+                red: 100,
+                green: 100,
+                blue: 100,
+            }
+        }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Ray {
-    origin: Point3,
-    direction: Vector3,
+    pub origin: Point3,
+    pub direction: Vector3,
 }
 
 #[derive(Debug, Clone)]
 pub struct Scene {
-    spheres: Vec<Sphere>,
-    width: u32,
-    height: u32,
-    fov: f32,
+    pub spheres: Vec<Sphere>,
+    pub width: u32,
+    pub height: u32,
+    pub fov: f32,
+    pub light: Light,
 }
 
 impl Scene {
     pub fn render(&self) -> DynamicImage {
         let mut image = DynamicImage::new_rgb8(self.width, self.height);
-        let black = Color {
-            red: 0,
-            green: 0,
-            blue: 0,
-        };
         for x in 0..self.width {
             for y in 0..self.height {
                 let ray = self.spawn_prime_ray(x as f32, y as f32);
                 let sphere = self.spheres.get(0).unwrap();
-                if sphere.intersect(&ray) {
-                    image.put_pixel(x, y, sphere.color.to_rgba());
-                } else {
-                    image.put_pixel(x, y, black.to_rgba());
-                }
+                let color = sphere.calc_color(&ray, &self.light);
+                image.put_pixel(x, y, color.to_rgba());
             }
         }
         image
     }
+
     pub fn spawn_prime_ray(&self, x: f32, y: f32) -> Ray {
         // We are assuming that our image is wider than it is tall.
         //  otherwise, the aspect ratio adjustment would be wrong.
@@ -187,9 +166,11 @@ impl Scene {
         sensor_x = 2.0 * sensor_x - 1.0;
         sensor_y = 1.0 - (2.0 * sensor_y);
 
+        // Adjust for the aspect ratio
         let aspect_ratio = self.width as f32 / self.height as f32;
         sensor_x *= aspect_ratio;
 
+        // Adjust for the fov
         let fov_adj = (self.fov.to_radians() / 2.0).tan();
         sensor_x *= fov_adj;
         sensor_y *= fov_adj;
@@ -214,6 +195,15 @@ fn test_can_render_scene() {
         width: 800,
         height: 600,
         fov: 90.0,
+        light: Light {
+            direction: Vector3::new(0.0, 0.0, -1.0),
+            color: Color {
+                red: 255,
+                green: 255,
+                blue: 255,
+            },
+            intensity: 1.0,
+        },
         spheres: vec![Sphere {
             center: Point3::zero(),
             radius: 1.0,
@@ -222,6 +212,7 @@ fn test_can_render_scene() {
                 green: 20,
                 blue: 50,
             },
+            albedo: 1.0,
         }],
     };
 
