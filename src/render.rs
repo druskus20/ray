@@ -27,12 +27,18 @@ pub struct Scene {
 impl Scene {
     pub fn render(&self) -> DynamicImage {
         let mut image = DynamicImage::new_rgb8(self.width, self.height);
+        let background = Color::new(100, 100, 100);
         for x in 0..self.width {
             for y in 0..self.height {
                 let ray = self.spawn_prime_ray(x as f32, y as f32);
-                let sphere = self.objects.get(0).unwrap();
-                let color = sphere.calc_color(&ray, &self.light);
-                image.put_pixel(x, y, color.to_rgba());
+                image.put_pixel(x, y, background.to_rgba());
+
+                // TODO: Optimize this
+                for object in self.objects.iter() {
+                    if let Some(color) = object.calc_color(&ray, &self.light) {
+                        image.put_pixel(x, y, color.to_rgba());
+                    }
+                }
             }
         }
         image

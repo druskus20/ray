@@ -32,7 +32,8 @@ impl Object {
         }
     }
 
-    pub fn calc_color(&self, ray: &Ray, light: &Light) -> Color {
+    // TODO: This shouldnt belong to Object probably
+    pub fn calc_color(&self, ray: &Ray, light: &Light) -> Option<Color> {
         if let Some(distance) = self.intersect_distance(ray) {
             let hit_point = ray.origin + (ray.direction * distance);
             let surface_normal = self.surface_normal(hit_point);
@@ -51,9 +52,13 @@ impl Object {
             );
 
             let res_color = res_color * light_intensity * light_reflected * 255.0;
-            Color::new(res_color.x as u8, res_color.y as u8, res_color.z as u8)
+            Some(Color::new(
+                res_color.x as u8,
+                res_color.y as u8,
+                res_color.z as u8,
+            ))
         } else {
-            Color::new(100, 100, 100)
+            None
         }
     }
 }
@@ -63,6 +68,7 @@ pub struct Plane {
     pub normal: Vector3,
     pub color: Color,
     pub albedo: f32,
+    pub origin: Vector3,
 }
 
 #[derive(Debug, Clone)]
@@ -88,7 +94,20 @@ impl Intersectable for Object {
 
 impl Intersectable for Plane {
     fn intersect_distance(&self, ray: &Ray) -> Option<f32> {
-        todo!()
+        // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
+
+        let normal = self.normal;
+        let denom = normal.dot(&ray.direction);
+
+        // If the denominator is close to 0, the ray is parallel to the plane (eq tends to infinity)
+        if denom.abs() < 1e-6 {
+            return None;
+        }
+
+        let num = (self.origin - ray.origin).dot(&normal);
+        let distance = num / denom;
+
+        Some(distance)
     }
 }
 
@@ -113,7 +132,7 @@ impl Intersectable for Sphere {
         let intersection_in = adj - thickness;
         let intersection_out = adj + thickness;
 
-        // Is this necessary?
+        // TODO: Is this necessary?
         // if intersection_in < 0.0 && intersection_out < 0.0 {
         //     return None;
         // }
