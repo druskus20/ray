@@ -8,7 +8,7 @@ Ray is a simple raytracer demo written in Rust
 - [x] Spheres 
 - [x] Directional Light 
 - [ ] Planes
-- [ ] Shadows
+- [x] Shadows
 - [ ] Materials 
 - [ ] Reflections
 
