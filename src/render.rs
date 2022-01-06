@@ -26,7 +26,7 @@ pub struct Scene {
     pub width: u32,
     pub height: u32,
     pub fov: f32,
-    pub light: Light,
+    pub lights: Vec<Light>,
 }
 
 impl Scene {
@@ -52,40 +52,41 @@ impl Scene {
         let object = &intersection.object;
         let hit_point = ray.origin + (ray.direction * distance);
         let surface_normal = object.surface_normal(hit_point);
-        let light_direction = -self.light.direction.normalize();
+        let mut color = Vector3::zero();
 
-        let shadow_ray = Ray {
-            // Shadow acne happens because of floating point values
-            //  so we add an offset towards the outside of the object Shadow acne happens because
-            //  of floating point values
-            //   so we add an offset towards the outside of the object
-            origin: hit_point + (surface_normal * 0.001),
-            direction: light_direction,
-        };
+        for light in &self.lights {
+            let light_direction = -light.direction.normalize();
 
-        // if there are no objects intersecting with the shadow ray
-        let is_in_light = self.trace_ray(&shadow_ray).is_none();
+            let shadow_ray = Ray {
+                // Shadow acne happens because of floating point values
+                //  so we add an offset towards the outside of the object Shadow acne happens because
+                //  of floating point values
+                //   so we add an offset towards the outside of the object
+                origin: hit_point + (surface_normal * 0.001),
+                direction: light_direction,
+            };
 
-        // Amount of light that lands on the point
-        let light_intensity = if is_in_light {
-            self.light.intensity
-        } else {
-            0.0
-        };
+            // if there are no objects intersecting with the shadow ray
+            let is_in_light = self.trace_ray(&shadow_ray).is_none();
 
-        let light_intensity = surface_normal.dot(&light_direction).max(0.0) * light_intensity;
-        // Amount of light reflected
-        let light_reflected = object.albedo() / std::f32::consts::PI;
+            // Amount of light that lands on the point
+            let light_intensity = if is_in_light { light.intensity } else { 0.0 };
 
-        // Combine all: color of the point, color of the light, light intensity, and light reflected
-        let res_color = Vector3::new(
-            (object.color().red as f32 / 255.0) * (self.light.color.red as f32 / 255.0),
-            (object.color().green as f32 / 255.0) * (self.light.color.green as f32 / 255.0),
-            (object.color().blue as f32 / 255.0) * (self.light.color.blue as f32 / 255.0),
-        );
+            let light_intensity = surface_normal.dot(&light_direction).max(0.0) * light_intensity;
+            // Amount of light reflected
+            let light_reflected = object.albedo() / std::f32::consts::PI;
 
-        let res_color = res_color * light_intensity * light_reflected * 255.0;
-        Color::new(res_color.x as u8, res_color.y as u8, res_color.z as u8)
+            // Combine all: color of the point, color of the light, light intensity, and light reflected
+            let res_color = Vector3::new(
+                (object.color().red as f32 / 255.0) * (light.color.red as f32 / 255.0),
+                (object.color().green as f32 / 255.0) * (light.color.green as f32 / 255.0),
+                (object.color().blue as f32 / 255.0) * (light.color.blue as f32 / 255.0),
+            );
+
+            let res_color = res_color * light_intensity * light_reflected * 255.0;
+            color = color + res_color;
+        }
+        Color::new(color.x as u8, color.y as u8, color.z as u8)
     }
 
     pub fn spawn_prime_ray(&self, x: f32, y: f32) -> Ray {

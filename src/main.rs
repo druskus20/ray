@@ -17,11 +17,18 @@ fn main() {
         width: 800,
         height: 600,
         fov: 90.0,
-        light: Light {
-            direction: Vector3::new(0.3, -0.8, -0.9),
-            color: Color::new(255, 255, 255),
-            intensity: 20.0,
-        },
+        lights: vec![
+            Light {
+                direction: Vector3::new(0.3, -0.8, -0.9),
+                color: Color::new(255, 255, 255),
+                intensity: 8.0,
+            },
+            Light {
+                direction: Vector3::new(-0.8, -0.6, -0.5),
+                color: Color::new(255, 255, 255),
+                intensity: 13.0,
+            },
+        ],
         objects: vec![
             // Object::Plane(Plane {
             //     normal: Vector3::new(-0.0, -1.0, -0.0),
@@ -77,11 +84,11 @@ fn test_can_render_scene() {
         width: 800,
         height: 600,
         fov: 90.0,
-        light: Light {
+        lights: vec![Light {
             direction: Vector3::new(0.0, 0.0, -1.0),
             color: Color::new(255, 255, 255),
             intensity: 1.0,
-        },
+        }],
         objects: vec![Object::Sphere(Sphere {
             center: Vector3::zero(),
             radius: 1.0,
