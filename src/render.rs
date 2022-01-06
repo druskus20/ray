@@ -54,8 +54,26 @@ impl Scene {
         let surface_normal = object.surface_normal(hit_point);
         let light_direction = -self.light.direction.normalize();
 
+        let shadow_ray = Ray {
+            // Shadow acne happens because of floating point values
+            //  so we add an offset towards the outside of the object Shadow acne happens because
+            //  of floating point values
+            //   so we add an offset towards the outside of the object
+            origin: hit_point + (surface_normal * 0.001),
+            direction: light_direction,
+        };
+
+        // if there are no objects intersecting with the shadow ray
+        let is_in_light = self.trace_ray(&shadow_ray).is_none();
+
         // Amount of light that lands on the point
-        let light_intensity = surface_normal.dot(&light_direction).max(0.0) * self.light.intensity;
+        let light_intensity = if is_in_light {
+            self.light.intensity
+        } else {
+            0.0
+        };
+
+        let light_intensity = surface_normal.dot(&light_direction).max(0.0) * light_intensity;
         // Amount of light reflected
         let light_reflected = object.albedo() / std::f32::consts::PI;
 
