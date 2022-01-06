@@ -1,7 +1,7 @@
 # Ray
 Ray is a simple raytracer demo written in Rust
 
-![image](https://user-images.githubusercontent.com/43417195/148454654-9230e843-7782-4588-8d37-51e47f71e538.png)
+![image](https://user-images.githubusercontent.com/43417195/148458673-a47123d3-b382-4cb3-ad5e-1390b0386322.png)
 
 ## TODO
 - [x] Rays
@@ -9,6 +9,7 @@ Ray is a simple raytracer demo written in Rust
 - [x] Directional Light 
 - [ ] Planes
 - [x] Shadows
+- [x] Multiple lights
 - [ ] Materials 
 - [ ] Reflections
 
