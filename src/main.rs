@@ -23,17 +23,23 @@ fn main() {
             intensity: 20.0,
         },
         objects: vec![
-            Object::Plane(Plane {
-                normal: Vector3::new(-0.5, -1.0, -0.0),
-                color: Color::new(50, 50, 50),
-                albedo: 0.3,
-                origin: Vector3::new(0.0, -2.0, -5.0),
-            }),
+            //Object::Plane(Plane {
+            //    normal: Vector3::new(-0.0, -1.0, -0.0),
+            //    color: Color::new(255, 50, 50),
+            //    albedo: 0.3,
+            //    origin: Vector3::new(0.0, 50.0, -5.0),
+            //}),
             Object::Plane(Plane {
                 normal: Vector3::new(0.0, 0.0, -1.0),
-                color: Color::new(0, 20, 200),
-                albedo: 0.3,
-                origin: Vector3::new(0.0, 0.0, -200.0),
+                color: Color::new(50, 90, 200),
+                albedo: 0.5,
+                origin: Vector3::new(0.0, 0.0, -9.0),
+            }),
+            Object::Plane(Plane {
+                normal: Vector3::new(0.0, -1.0, -1.0),
+                color: Color::new(30, 30, 30),
+                albedo: 0.2,
+                origin: Vector3::new(0.0, -3.0, -7.0),
             }),
             Object::Sphere(Sphere {
                 center: Vector3::new(-1.0, 0.0, -3.0),
@@ -42,8 +48,14 @@ fn main() {
                 albedo: 0.38,
             }),
             Object::Sphere(Sphere {
-                center: Vector3::new(0.0, 0.0, -5.0),
+                center: Vector3::new(1.0, 1.0, -2.0),
                 radius: 1.0,
+                color: Color::new(40, 10, 200),
+                albedo: 0.38,
+            }),
+            Object::Sphere(Sphere {
+                center: Vector3::new(-1.0, 0.0, -8.0),
+                radius: 3.0,
                 color: Color::new(10, 200, 60),
                 albedo: 0.18,
             }),

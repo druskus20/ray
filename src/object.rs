@@ -1,8 +1,4 @@
-use crate::{
-    color::Color,
-    render::{Light, Ray},
-    Vector3,
-};
+use crate::{color::Color, render::Ray, Vector3};
 
 #[derive(Debug, Clone)]
 pub enum Object {
@@ -31,36 +27,6 @@ impl Object {
             Object::Plane(x) => -x.normal, // TODO: Why -?
         }
     }
-
-    // TODO: This shouldnt belong to Object probably
-    pub fn calc_color(&self, ray: &Ray, light: &Light) -> Option<Color> {
-        if let Some(distance) = self.intersect_distance(ray) {
-            let hit_point = ray.origin + (ray.direction * distance);
-            let surface_normal = self.surface_normal(hit_point);
-            let light_direction = -light.direction.normalize();
-
-            // Amount of light that lands on the point
-            let light_intensity = surface_normal.dot(&light_direction).max(0.0) * light.intensity;
-            // Amount of light reflected
-            let light_reflected = self.albedo() / std::f32::consts::PI;
-
-            // Combine all: color of the point, color of the light, light intensity, and light reflected
-            let res_color = Vector3::new(
-                (self.color().red as f32 / 255.0) * (light.color.red as f32 / 255.0),
-                (self.color().green as f32 / 255.0) * (light.color.green as f32 / 255.0),
-                (self.color().blue as f32 / 255.0) * (light.color.blue as f32 / 255.0),
-            );
-
-            let res_color = res_color * light_intensity * light_reflected * 255.0;
-            Some(Color::new(
-                res_color.x as u8,
-                res_color.y as u8,
-                res_color.z as u8,
-            ))
-        } else {
-            None
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -79,21 +45,27 @@ pub struct Sphere {
     pub albedo: f32,
 }
 
+#[derive(Debug, Clone)]
+pub struct Intersection {
+    pub distance: f32,
+    pub object: Object,
+}
+
 pub trait Intersectable {
-    fn intersect_distance(&self, ray: &Ray) -> Option<f32>;
+    fn intersect(&self, ray: &Ray) -> Option<Intersection>;
 }
 
 impl Intersectable for Object {
-    fn intersect_distance(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         match self {
-            Object::Sphere(s) => s.intersect_distance(ray),
-            Object::Plane(p) => p.intersect_distance(ray),
+            Object::Sphere(s) => s.intersect(ray),
+            Object::Plane(p) => p.intersect(ray),
         }
     }
 }
 
 impl Intersectable for Plane {
-    fn intersect_distance(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
 
         let normal = self.normal;
@@ -107,12 +79,15 @@ impl Intersectable for Plane {
         let num = (self.origin - ray.origin).dot(&normal);
         let distance = num / denom;
 
-        Some(distance)
+        Some(Intersection {
+            distance,
+            object: Object::Plane(self.clone()), // TODO: This is kinda weird
+        })
     }
 }
 
 impl Intersectable for Sphere {
-    fn intersect_distance(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         // Trigonometry yay!
         let line = self.center - ray.origin;
         let adj = line.dot(&ray.direction);
@@ -133,11 +108,14 @@ impl Intersectable for Sphere {
         let intersection_out = adj + thickness;
 
         // TODO: Is this necessary?
-        // if intersection_in < 0.0 && intersection_out < 0.0 {
-        //     return None;
-        // }
+        if intersection_in < 0.0 && intersection_out < 0.0 {
+            return None;
+        }
 
         let distance = intersection_in.min(intersection_out);
-        Some(distance)
+        Some(Intersection {
+            distance,
+            object: Object::Sphere(self.clone()), // TODO: This is kinda weird
+        })
     }
 }
