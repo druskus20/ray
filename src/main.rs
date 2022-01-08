@@ -2,52 +2,59 @@
 #![allow(unused_variables)]
 
 mod color;
+mod light;
 mod object;
 mod render;
 mod vector;
 
 use color::Color;
 use image::ImageFormat;
+use light::{DirectionalLight, Light, PointLight};
 use object::{Object, Plane, Sphere};
-use render::{Light, Scene};
+use render::Scene;
 use vector::Vector3;
 
 fn main() {
     let scene = Scene {
-        width: 800,
-        height: 600,
+        width: 1600,
+        height: 1200,
         fov: 90.0,
         lights: vec![
-            Light {
-                direction: Vector3::new(0.3, -0.8, -0.9),
+            Light::Directional(DirectionalLight {
+                direction: Vector3::new(0.25, -0.5, -0.5),
                 color: Color::new(255, 255, 255),
-                intensity: 8.0,
-            },
-            Light {
-                direction: Vector3::new(-0.8, -0.6, -0.5),
+                intensity: 2.0,
+            }),
+            Light::Point(PointLight {
+                position: Vector3::new(0.3, -0.7, -1.5),
                 color: Color::new(255, 255, 255),
-                intensity: 13.0,
-            },
+                intensity: 300.0,
+            }),
+            Light::Point(PointLight {
+                position: Vector3::new(0.0, 10.0, -10.0),
+                color: Color::new(255, 255, 255),
+                intensity: 10000.0,
+            }),
         ],
         objects: vec![
+            Object::Plane(Plane {
+                normal: Vector3::new(-0.0, -1.0, -0.0),
+                color: Color::new(60, 60, 60),
+                albedo: 0.38,
+                origin: Vector3::new(0.0, -3.0, 0.0),
+            }),
+            Object::Plane(Plane {
+                normal: Vector3::new(0.0, 0.0, -1.0),
+                color: Color::new(90, 160, 220),
+                albedo: 0.38,
+                origin: Vector3::new(0.0, 0.0, -20.0),
+            }),
             // Object::Plane(Plane {
-            //     normal: Vector3::new(-0.0, -1.0, -0.0),
-            //     color: Color::new(255, 50, 50),
-            //     albedo: 0.3,
-            //     origin: Vector3::new(0.0, 50.0, -5.0),
+            //     normal: Vector3::new(0.0, -1.0, -1.0),
+            //     color: Color::new(30, 30, 30),
+            //     albedo: 0.2,
+            //     origin: Vector3::new(0.0, -3.0, -7.0),
             // }),
-            // Object::Plane(Plane {
-            //     normal: Vector3::new(0.0, 0.0, -1.0),
-            //     color: Color::new(50, 90, 200),
-            //     albedo: 0.5,
-            //     origin: Vector3::new(0.0, 0.0, -9.0),
-            // }),
-            //Object::Plane(Plane {
-            //    normal: Vector3::new(0.0, -1.0, -1.0),
-            //    color: Color::new(30, 30, 30),
-            //    albedo: 0.2,
-            //    origin: Vector3::new(0.0, -3.0, -7.0),
-            //}),
             Object::Sphere(Sphere {
                 center: Vector3::new(-1.0, 0.0, -3.0),
                 radius: 1.0,
@@ -84,11 +91,11 @@ fn test_can_render_scene() {
         width: 800,
         height: 600,
         fov: 90.0,
-        lights: vec![Light {
+        lights: vec![Light::Directional(DirectionalLight {
             direction: Vector3::new(0.0, 0.0, -1.0),
             color: Color::new(255, 255, 255),
             intensity: 1.0,
-        }],
+        })],
         objects: vec![Object::Sphere(Sphere {
             center: Vector3::zero(),
             radius: 1.0,

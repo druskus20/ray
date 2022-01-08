@@ -72,7 +72,7 @@ impl Intersectable for Plane {
         let denom = normal.dot(&ray.direction);
 
         // If the denominator is close to 0, the ray is parallel to the plane (eq tends to infinity)
-        if denom.abs() < 1e-6 {
+        if denom < 1e-6 {
             return None;
         }
 

@@ -26,6 +26,10 @@ impl Vector3 {
         )
     }
 
+    pub fn norm(&self) -> f32 {
+        self.dot(self)
+    }
+
     pub fn length(&self) -> f32 {
         self.dot(&self).sqrt()
     }

@@ -2,17 +2,11 @@ use image::{DynamicImage, GenericImage};
 
 use crate::{
     color::Color,
+    light::Light,
     object::Intersection,
     object::{Intersectable, Object},
     vector::Vector3,
 };
-
-#[derive(Debug, Clone)]
-pub struct Light {
-    pub direction: Vector3,
-    pub color: Color,
-    pub intensity: f32,
-}
 
 #[derive(Debug, Clone)]
 pub struct Ray {
@@ -55,7 +49,7 @@ impl Scene {
         let mut color = Vector3::zero();
 
         for light in &self.lights {
-            let light_direction = -light.direction.normalize();
+            let light_direction = light.direction(hit_point);
 
             let shadow_ray = Ray {
                 // Shadow acne happens because of floating point values
@@ -67,10 +61,16 @@ impl Scene {
             };
 
             // if there are no objects intersecting with the shadow ray
-            let is_in_light = self.trace_ray(&shadow_ray).is_none();
+            let shadow_intersection = self.trace_ray(&shadow_ray);
+            let is_in_light = shadow_intersection.is_none()
+                || shadow_intersection.unwrap().distance > light.distance(hit_point);
 
             // Amount of light that lands on the point
-            let light_intensity = if is_in_light { light.intensity } else { 0.0 };
+            let light_intensity = if is_in_light {
+                light.intensity(hit_point)
+            } else {
+                0.0
+            };
 
             let light_intensity = surface_normal.dot(&light_direction).max(0.0) * light_intensity;
             // Amount of light reflected
@@ -78,9 +78,9 @@ impl Scene {
 
             // Combine all: color of the point, color of the light, light intensity, and light reflected
             let res_color = Vector3::new(
-                (object.color().red as f32 / 255.0) * (light.color.red as f32 / 255.0),
-                (object.color().green as f32 / 255.0) * (light.color.green as f32 / 255.0),
-                (object.color().blue as f32 / 255.0) * (light.color.blue as f32 / 255.0),
+                (object.color().red as f32 / 255.0) * (light.color().red as f32 / 255.0),
+                (object.color().green as f32 / 255.0) * (light.color().green as f32 / 255.0),
+                (object.color().blue as f32 / 255.0) * (light.color().blue as f32 / 255.0),
             );
 
             let res_color = res_color * light_intensity * light_reflected * 255.0;
