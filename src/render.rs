@@ -1,10 +1,7 @@
 use image::{DynamicImage, GenericImage};
 
 use crate::{
-    color::Color,
-    light::Light,
-    object::Intersection,
-    object::{Intersectable, Object},
+    color::Color, light::Light, object::Intersectable, object::Intersection, object::Object,
     vector::Vector3,
 };
 
@@ -45,7 +42,7 @@ impl Scene {
         let distance = intersection.distance;
         let object = &intersection.object;
         let hit_point = ray.origin + (ray.direction * distance);
-        let surface_normal = object.surface_normal(hit_point);
+        let surface_normal = object.mesh.surface_normal(hit_point);
         let mut color = Vector3::zero();
 
         for light in &self.lights {
@@ -74,13 +71,13 @@ impl Scene {
 
             let light_intensity = surface_normal.dot(&light_direction).max(0.0) * light_intensity;
             // Amount of light reflected
-            let light_reflected = object.albedo() / std::f32::consts::PI;
+            let light_reflected = object.material.albedo / std::f32::consts::PI;
 
             // Combine all: color of the point, color of the light, light intensity, and light reflected
             let res_color = Vector3::new(
-                (object.color().red as f32 / 255.0) * (light.color().red as f32 / 255.0),
-                (object.color().green as f32 / 255.0) * (light.color().green as f32 / 255.0),
-                (object.color().blue as f32 / 255.0) * (light.color().blue as f32 / 255.0),
+                (object.material.color.red as f32 / 255.0) * (light.color().red as f32 / 255.0),
+                (object.material.color.green as f32 / 255.0) * (light.color().green as f32 / 255.0),
+                (object.material.color.blue as f32 / 255.0) * (light.color().blue as f32 / 255.0),
             );
 
             let res_color = res_color * light_intensity * light_reflected * 255.0;

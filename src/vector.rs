@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vector3 {
     pub x: f32,
@@ -69,5 +71,22 @@ impl std::ops::Neg for Vector3 {
 
     fn neg(self) -> Self::Output {
         Vector3::new(-self.x, -self.y, -self.z)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Vector2(Vector3);
+
+impl Vector2 {
+    pub fn new(x: f32, y: f32) -> Vector2 {
+        Vector2(Vector3::new(x, y, 0.0))
+    }
+}
+
+impl Deref for Vector2 {
+    type Target = Vector3;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
