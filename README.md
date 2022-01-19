@@ -13,6 +13,5 @@ Ray is a simple raytracer demo written in Rust
 - [x] Point lights
 - [x] Materials 
 - [x] Reflections
-- [ ] Refraction
 
 
