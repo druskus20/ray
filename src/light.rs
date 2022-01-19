@@ -1,4 +1,4 @@
-use crate::{color::Color, vector::Vector3};
+use crate::{material::Color, vector::Vector3};
 
 #[derive(Debug, Clone)]
 pub enum Light {

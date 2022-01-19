@@ -1,21 +1,9 @@
-use crate::{color::Color, render::Ray, vector::Vector2, Vector3};
+use crate::{material::Material, render::Ray, vector::Vector2, Vector3};
 
 #[derive(Debug, Clone)]
 pub struct Object {
     pub material: Material,
     pub mesh: Mesh,
-}
-
-#[derive(Debug, Clone)]
-pub struct Material {
-    pub color: Color,
-    pub albedo: f32,
-}
-
-impl Material {
-    pub fn new(color: Color, albedo: f32) -> Self {
-        Self { color, albedo }
-    }
 }
 
 impl Object {
@@ -111,7 +99,18 @@ impl Intersectable for Plane {
     }
 
     fn texture_coords(&self, hit_point: Vector3) -> Vector2 {
-        todo!()
+        // Create a 2d space
+        let x_axis = if self.normal.z != 0.0 {
+            self.normal.cross(&Vector3::new(0.0, 0.0, 1.0))
+        } else {
+            self.normal.cross(&Vector3::new(1.0, 1.0, 0.0))
+        };
+        let y_axis = self.normal.cross(&x_axis);
+
+        let hit_vector = hit_point - self.origin;
+
+        // Calculate the texture coordinates by computing the distance from the hit point
+        Vector2::new(hit_vector.dot(&x_axis), hit_vector.dot(&y_axis))
     }
 }
 
@@ -150,6 +149,16 @@ impl Intersectable for Sphere {
     }
 
     fn texture_coords(&self, hit_point: Vector3) -> Vector2 {
-        todo!()
+        let hit_vector = hit_point - self.center;
+
+        // Convert the coordinates to spherical coordinates
+        let phi = hit_vector.z.atan2(hit_vector.x); // -PI..PI
+        let theta = (hit_vector.y / self.radius).acos(); // 0..PI
+
+        // Change the ranges to 0..1
+        Vector2::new(
+            (1.0 + (phi / std::f32::consts::PI)) * 0.5,
+            theta / std::f32::consts::PI,
+        )
     }
 }

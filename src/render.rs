@@ -1,7 +1,7 @@
 use image::{DynamicImage, GenericImage};
 
 use crate::{
-    color::Color, light::Light, object::Intersectable, object::Intersection, object::Object,
+    light::Light, material::Color, object::Intersectable, object::Intersection, object::Object,
     vector::Vector3,
 };
 
@@ -74,10 +74,15 @@ impl Scene {
             let light_reflected = object.material.albedo / std::f32::consts::PI;
 
             // Combine all: color of the point, color of the light, light intensity, and light reflected
+            let material = &object.material;
+            let texture_coords = object.mesh.texture_coords(hit_point);
             let res_color = Vector3::new(
-                (object.material.color.red as f32 / 255.0) * (light.color().red as f32 / 255.0),
-                (object.material.color.green as f32 / 255.0) * (light.color().green as f32 / 255.0),
-                (object.material.color.blue as f32 / 255.0) * (light.color().blue as f32 / 255.0),
+                (material.color(texture_coords).red as f32 / 255.0)
+                    * (light.color().red as f32 / 255.0),
+                (material.color(texture_coords).green as f32 / 255.0)
+                    * (light.color().green as f32 / 255.0),
+                (material.color(texture_coords).blue as f32 / 255.0)
+                    * (light.color().blue as f32 / 255.0),
             );
 
             let res_color = res_color * light_intensity * light_reflected * 255.0;
