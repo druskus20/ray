@@ -1,4 +1,4 @@
-use std::ops::Mul;
+use std::ops::{Add, Mul};
 
 use image::{GenericImageView, Pixel, Rgba};
 
@@ -8,11 +8,23 @@ use crate::vector::Vector2;
 pub struct Material {
     pub coloring: Coloring,
     pub albedo: f32,
+    pub surface_kind: SurfaceKind,
+}
+
+#[derive(Debug, Clone)]
+pub enum SurfaceKind {
+    Diffuse,
+    Reflective { reflectivity: f32 },
+    Refractive, // TODO:
 }
 
 impl Material {
-    pub fn new(coloring: Coloring, albedo: f32) -> Self {
-        Self { coloring, albedo }
+    pub fn new(coloring: Coloring, albedo: f32, surface_kind: SurfaceKind) -> Self {
+        Self {
+            coloring,
+            albedo,
+            surface_kind,
+        }
     }
 
     pub fn color(&self, coords: Vector2) -> Color {
@@ -87,6 +99,18 @@ impl From<Rgba<u8>> for Color {
             red: rgba.0[0],
             green: rgba.0[1],
             blue: rgba.0[2],
+        }
+    }
+}
+
+impl Add for Color {
+    type Output = Color;
+
+    fn add(self, other: Color) -> Color {
+        Color {
+            red: self.red + other.red,
+            green: self.green + other.green,
+            blue: self.blue + other.blue,
         }
     }
 }

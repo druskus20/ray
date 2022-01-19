@@ -9,7 +9,7 @@ mod vector;
 
 use image::ImageFormat;
 use light::{DirectionalLight, Light, PointLight};
-use material::{Color, Coloring, Material, Texture};
+use material::{Color, Coloring, Material, SurfaceKind, Texture};
 use object::{Mesh, Object, Plane, Sphere};
 use render::Scene;
 use vector::Vector3;
@@ -20,6 +20,7 @@ fn main() {
         width: 800,
         height: 600,
         fov: 90.0,
+        max_recursion_depth: 5,
         lights: vec![
             Light::Directional(DirectionalLight {
                 direction: Vector3::new(0.25, -0.5, -0.5),
@@ -43,6 +44,7 @@ fn main() {
                 Material::new(
                     Coloring::Texture(Texture::new(sample_texture.clone())),
                     0.38,
+                    SurfaceKind::Reflective { reflectivity: 0.3 },
                 ),
                 Mesh::Plane(Plane {
                     normal: Vector3::new(-0.0, -1.0, -0.0),
@@ -50,14 +52,22 @@ fn main() {
                 }),
             ),
             Object::new(
-                Material::new(Coloring::Color(Color::new(90, 160, 220)), 0.38),
+                Material::new(
+                    Coloring::Color(Color::new(90, 160, 220)),
+                    0.38,
+                    SurfaceKind::Reflective { reflectivity: 0.75 },
+                ),
                 Mesh::Plane(Plane {
                     normal: Vector3::new(0.0, 0.0, -1.0),
                     origin: Vector3::new(0.0, 0.0, -20.0),
                 }),
             ),
             Object::new(
-                Material::new(Coloring::Color(Color::new(150, 10, 20)), 0.38),
+                Material::new(
+                    Coloring::Color(Color::new(150, 10, 20)),
+                    0.38,
+                    SurfaceKind::Reflective { reflectivity: 1.0 },
+                ),
                 Mesh::Sphere(Sphere {
                     center: Vector3::new(-1.0, 0.0, -3.0),
                     radius: 1.0,
@@ -67,6 +77,7 @@ fn main() {
                 Material::new(
                     Coloring::Texture(Texture::new(sample_texture.clone())),
                     0.38,
+                    SurfaceKind::Diffuse,
                 ),
                 //Material::new(Coloring::Color(Color::new(40, 10, 200)), 0.38),
                 Mesh::Sphere(Sphere {
@@ -75,7 +86,11 @@ fn main() {
                 }),
             ),
             Object::new(
-                Material::new(Coloring::Color(Color::new(10, 200, 60)), 0.18),
+                Material::new(
+                    Coloring::Color(Color::new(10, 200, 60)),
+                    0.18,
+                    SurfaceKind::Reflective { reflectivity: 0.3 },
+                ),
                 Mesh::Sphere(Sphere {
                     center: Vector3::new(-1.0, 0.0, -8.0),
                     radius: 3.0,
@@ -99,13 +114,18 @@ fn test_can_render_scene() {
         width: 800,
         height: 600,
         fov: 90.0,
+        max_recursion_depth: 2,
         lights: vec![Light::Directional(DirectionalLight {
             direction: Vector3::new(0.0, 0.0, -1.0),
             color: Color::new(255, 255, 255),
             intensity: 1.0,
         })],
         objects: vec![Object {
-            material: Material::new(Coloring::Color(Color::new(60, 60, 60)), 0.38),
+            material: Material::new(
+                Coloring::Color(Color::new(60, 60, 60)),
+                0.38,
+                SurfaceKind::Diffuse,
+            ),
             mesh: Mesh::Sphere(Sphere {
                 center: Vector3::zero(),
                 radius: 1.0,
