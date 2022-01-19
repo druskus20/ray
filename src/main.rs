@@ -15,7 +15,7 @@ use render::Scene;
 use vector::Vector3;
 
 fn main() {
-    let sample_texture = image::open("sample_texture.png").unwrap();
+    let texture = image::open("texture.png").unwrap();
     let scene = Scene {
         width: 80 * 10,
         height: 60 * 10,
@@ -62,7 +62,7 @@ fn main() {
         objects: vec![
             Object::new(
                 Material::new(
-                    Coloring::Texture(Texture::new(sample_texture.clone())),
+                    Coloring::Texture(Texture::new(texture.clone())),
                     //Coloring::Color(Color::new(160, 160, 160)),
                     0.18,
                     SurfaceKind::Reflective { reflectivity: 0.5 },
@@ -98,7 +98,7 @@ fn main() {
             ),
             Object::new(
                 Material::new(
-                    Coloring::Texture(Texture::new(sample_texture.clone())),
+                    Coloring::Texture(Texture::new(texture.clone())),
                     0.35,
                     SurfaceKind::Diffuse,
                 ),
