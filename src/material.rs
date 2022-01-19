@@ -15,7 +15,7 @@ pub struct Material {
 pub enum SurfaceKind {
     Diffuse,
     Reflective { reflectivity: f32 },
-    Refractive, // TODO:
+    _Refractive, // TODO:
 }
 
 impl Material {
@@ -84,7 +84,7 @@ impl Color {
         Rgba::from_channels(self.red, self.green, self.blue, 255)
     }
 
-    pub fn clamp(&self) -> Color {
+    pub fn _clamp(&self) -> Color {
         Color {
             red: self.red.min(255),
             green: self.green.min(255),

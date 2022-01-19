@@ -1,6 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 mod light;
 mod material;
 mod object;

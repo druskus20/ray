@@ -74,7 +74,6 @@ impl Scene {
             // and combine the the colors
             if recursion_depth < self.max_recursion_depth {
                 let reflection_ray = ray.reflect(surface_normal, hit_point);
-                let intersection = self.trace_ray(&reflection_ray);
 
                 let reflection_color = if let Some(intersection) = self.trace_ray(&reflection_ray) {
                     self.calc_color(&reflection_ray, &intersection, recursion_depth + 1)
